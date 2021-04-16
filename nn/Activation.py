@@ -1,7 +1,7 @@
 import numpy as np
-import Module
+import nn.Module
 
-class TanH(Module):
+class TanH(nn.Module):
     
     def forward(self, X):
         assert X.shape == (self.n, -1)
@@ -15,7 +15,7 @@ class TanH(Module):
 
         return 1 - np.tanh(input)**2 * delta
     
-class Sigmoid(Module):
+class Sigmoid(nn.Module):
     
     def forward(self, X):
         assert X.shape == (self.n, -1)
