@@ -74,7 +74,6 @@ class Optim:
             for x,y in zip(batch_X, batch_Y):
                 tmp.append(np.asarray(self.step(x, y)).mean())
             tmp = np.asarray(tmp)
-            print(tmp)
             mean.append(tmp.mean())
             std.append(tmp.std())
         return mean, std

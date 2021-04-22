@@ -24,7 +24,7 @@ datax, datay = (mnist.data, mnist.target)
 X_train, X_test, y_train, y_test = train_test_split(datax, datay, test_size=0.3)
 
 y_train = np.asarray([onehot(x) for x in y_train])
-print(datay.shape)
+
 
 n = datax.shape[1]
 hidden1 = 30
