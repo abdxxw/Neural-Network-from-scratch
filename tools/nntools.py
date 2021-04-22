@@ -2,9 +2,10 @@ import numpy as np
 
 class Sequentiel:
     
-    def __init__(self, modules):
+    def __init__(self, modules,labels=None):
         assert(len(modules) > 1)
         self._modules = modules
+        self._labels = labels
 
     def forward(self, x):
         outputs = [x]
@@ -19,6 +20,7 @@ class Sequentiel:
         list_delta = [delta]
         for i, module in enumerate(np.flip(self._modules)): # len(outputs) = len(modules) +1 so its safe
             module.backward_update_gradient(outputs[i+1], list_delta[-1])
+
             list_delta.append(module.backward_delta(outputs[i+1] , list_delta[-1]))
     
         return list_delta
@@ -30,6 +32,8 @@ class Sequentiel:
             m.zero_grad()
     
     def predict(self, x):
+        if self._labels is not None:
+            return self._labels(self.forward(x)[0])
         return self.forward(x)[0]
     
 
@@ -60,6 +64,7 @@ class Optim:
         
     
         #generate batch list
+
         batch_X  = [X[i:i + batch_size] for i in range(0, len(X), batch_size)]
         batch_Y = [Y[i:i + batch_size] for i in range(0, len(Y), batch_size)]
         mean = []
@@ -67,9 +72,12 @@ class Optim:
         for e in range(epoch):
             tmp = []
             for x,y in zip(batch_X, batch_Y):
-                tmp.append(self.step(x, y))
+                tmp.append(np.asarray(self.step(x, y)).mean())
             tmp = np.asarray(tmp)
+            print(tmp)
             mean.append(tmp.mean())
             std.append(tmp.std())
         return mean, std
                 
+    def score(self,x,y):
+        return np.where(y == self._net.predict(x),1,0).mean()

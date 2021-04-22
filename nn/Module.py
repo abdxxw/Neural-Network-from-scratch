@@ -70,10 +70,9 @@ class Linear(Module):
     def backward_delta(self, input, delta):
         assert input.shape[1] == self._n
         assert delta.shape[1] == self._d
-        assert input.shape[1] == self._parameters.shape[0]
-        
-        out = np.dot(input,self._parameters)
-        return out * delta
+      
+
+        return np.dot(delta,self._parameters.T)
 
 
 
@@ -85,7 +84,6 @@ class TanH(Module):
     
     
     def backward_delta(self, input, delta):
-
         return 1 - np.tanh(input)**2 * delta
     
     def update_parameters(self, gradient_step=1e-3):
@@ -117,8 +115,10 @@ class Softmax(Module):
     def backward_delta(self, input, delta):
         
         expo = np.exp(input)
-        tmp = expo / np.sum(expo, axis=1).reshape((-1,1))
-        return delta * (tmp * (1-tmp))
+        out = expo / np.sum(expo, axis=1).reshape((-1,1))
+        return delta * (out * (1-out))
     
     def update_parameters(self, gradient_step=1e-3):
         pass
+    
+    

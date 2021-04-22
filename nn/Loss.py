@@ -28,7 +28,6 @@ class CELoss(Loss):
     
     def forward(self, y, yhat):
         assert(y.shape == yhat.shape)
-
         return 1 - np.sum(yhat * y, axis = 1)
     
     def backward(self, y, yhat):

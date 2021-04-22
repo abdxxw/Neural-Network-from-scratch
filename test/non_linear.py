@@ -12,8 +12,8 @@ from tools import basic
 
 batchsize = 1000
 
-datax, datay = basic.gen_arti(centerx=1, centery=1, sigma=0.1, nbex=batchsize, data_type=0, epsilon=0.1)
-testx, testy = basic.gen_arti(centerx=1, centery=1, sigma=0.1, nbex=batchsize, data_type=0, epsilon=0.1)
+datax, datay = basic.gen_arti(centerx=1, centery=1, sigma=0.4, nbex=batchsize, data_type=0, epsilon=0.1)
+testx, testy = basic.gen_arti(centerx=1, centery=1, sigma=0.4, nbex=batchsize, data_type=0, epsilon=0.1)
 
 
 datay = np.where(datay==-1,0,1).reshape((-1,1))
@@ -22,7 +22,7 @@ testy = np.where(testy==-1,0,1).reshape((-1,1))
 
 n = datax.shape[1]
 hidden = 5
-d = datay.shape[1]
+d = 1
 
 
 iteration = 10
@@ -70,7 +70,9 @@ def predict(x):
     hidden_l = act_tan.forward(hidden_l)
     hidden_l = lin_layer2.forward(hidden_l)
     hidden_l = act_sig.forward(hidden_l)  
-    return np.where(hidden_l >= 0.5,1, -1)
+    return np.where(hidden_l >= 0.5,1, 0)
+
+print("accuracy : ",np.where(testy == predict(testx),1,0).mean())
 
 basic.plot_frontiere(testx, predict, step=100)
 basic.plot_data(testx, testy.reshape(-1))
