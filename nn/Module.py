@@ -29,13 +29,24 @@ class Module(object):
 
 class Linear(Module):
     
-    def __init__(self, n, d, bias=True):
+    def __init__(self, n, d, bias=True,type=2):
         self._n = n
         self._d = d
-        self._parameters = np.random.rand(n,d)
         self._gradient = np.zeros((n,d))
+        if type == 0:
+            self._parameters = np.random.random((n,d)) - 0.5
+        if type == 1:
+            self._parameters = np.random.normal(0, 1,(n,d))
+        if type == 2:
+            self._parameters = np.random.normal(0, 1,(n,d))*np.sqrt(2/(n+d))
+            
         if bias == True:
-            self._bias = np.random.rand(1, d)
+            if type == 0:
+                self._bias = np.random.random((1,d)) - 0.5
+            if type == 1:
+                self._bias = np.random.normal(0, 1,(1,d))
+            if type == 2:
+                self._bias = np.random.normal(0, 1,(1,d))*np.sqrt(2/(n+d))
             self._bias_grad = np.zeros((1, d))
         else:
             self._bias = None
@@ -72,9 +83,13 @@ class Linear(Module):
         assert delta.shape[1] == self._d
       
 
-        return np.dot(delta,self._parameters.T)
+        return np.dot(delta,self._parameters.T) 
 
 
+
+    def zero_grad(self):
+        self._gradient = np.zeros((self._n,self._d))
+        self._bias_grad = np.zeros((1, self._d))
 
 
 class TanH(Module):
@@ -84,7 +99,7 @@ class TanH(Module):
     
     
     def backward_delta(self, input, delta):
-        return 1 - np.tanh(input)**2 * delta
+        return (1 - np.tanh(input)**2) * delta
     
     def update_parameters(self, gradient_step=1e-3):
         pass
@@ -103,7 +118,6 @@ class Sigmoid(Module):
     
     def update_parameters(self, gradient_step=1e-3):
         pass
-    
     
 
 class Softmax(Module):

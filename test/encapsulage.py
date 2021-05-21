@@ -1,21 +1,21 @@
 
-#import os, sys
-#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 
 from nn.Module import Linear,TanH,Sigmoid
 from nn.Loss import MSELoss
-from tools import basic
+from tools.basic import *
 from tools.nntools import Sequentiel, Optim
 import matplotlib.pyplot as plt
 
 
 
-size = 100
+size = 500
 
-datax, datay = basic.gen_arti(centerx=1, centery=1, sigma=0.2, nbex=size, data_type=0, epsilon=0.1)
-testx, testy = basic.gen_arti(centerx=1, centery=1, sigma=0.2, nbex=size, data_type=0, epsilon=0.1)
+datax, datay = gen_arti(centerx=1, centery=1, sigma=0.5, nbex=size, data_type=2, epsilon=0.1)
+testx, testy = gen_arti(centerx=1, centery=1, sigma=0.5, nbex=size, data_type=2, epsilon=0.1)
 
 
 datay = np.where(datay==-1,0,1).reshape((-1,1))
@@ -23,24 +23,28 @@ testy = np.where(testy==-1,0,1).reshape((-1,1))
 
 
 n = datax.shape[1]
-hidden = 5
+hidden = 80
+hidden2 = 60
 d = 1
 
 
-iteration = 10
-gradient_step = 1e-5
-batchsize=32
+iteration = 500
+gradient_step = 1e-3
+batchsize=10
 
 def label_func(x):
     return np.where(x >= 0.5,1, 0)
     
 loss_mse = MSELoss()
-lin_layer = Linear(n, hidden)
-lin_layer2 = Linear(hidden, d)
+lin_layer = Linear(n, hidden,type=1)
+lin_layer2 = Linear(hidden, hidden2,type=1)
+lin_layer3 = Linear(hidden2, d,type=1)
+lin_layer4 = Linear(40, 30,type=1)
+lin_layer5 = Linear(30, d,type=1)
 act_sig = Sigmoid()
 act_tan = TanH()
 
-net = Sequentiel([lin_layer,act_tan,lin_layer2,act_sig],labels=label_func)
+net = Sequentiel([lin_layer,act_tan,lin_layer2,act_tan,lin_layer3,act_sig],labels=label_func)
 
 
 opt = Optim(net,loss_mse,eps=gradient_step)
@@ -52,9 +56,10 @@ plt.legend(('Mean', 'std'))
 plt.show()
 
 
-
-print("accuracy : ",opt.score(testx,testy))
-
-basic.plot_frontiere(testx, net.predict, step=100)
-basic.plot_data(testx, testy.reshape(-1))
-
+acc = opt.score(datax,datay)
+print("accuracy : ",acc)
+plt.figure()
+basic.plot_frontiere(datax, opt._net.predict, step=100)
+basic.plot_data(datax, datay.reshape(-1))
+plt.title("accuracy = "+str(acc))
+plt.show()

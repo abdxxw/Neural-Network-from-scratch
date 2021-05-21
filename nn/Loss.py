@@ -23,7 +23,7 @@ class MSELoss(Loss):
         assert(y.shape == yhat.shape)
         
         return -2*(y - yhat) 
-    
+
 class CELoss(Loss):
     
     def forward(self, y, yhat):
@@ -33,7 +33,19 @@ class CELoss(Loss):
     def backward(self, y, yhat):
         assert(y.shape == yhat.shape)
         
-        return -y
+        return yhat-y
+    
+class BCELoss(Loss):
+    
+    def forward(self, y, yhat):
+        assert(y.shape == yhat.shape)
+        
+        return - (y*np.log(yhat + 1e-100) + (1-y)*np.log(1-yhat+ 1e-100))
+    
+    def backward(self, y, yhat):
+        assert(y.shape == yhat.shape)
+        
+        return ((1-y)/(1-yhat+ 1e-100)) - (y/yhat+ 1e-100)
     
     
 class CElogSoftMax(Loss):
@@ -41,7 +53,7 @@ class CElogSoftMax(Loss):
     def forward(self, y, yhat):
         assert(y.shape == yhat.shape)
 
-        return np.log(np.sum(np.exp(yhat), axis=1)) - np.sum(y * yhat,axis = 1)
+        return np.log(np.sum(np.exp(yhat), axis=1)+ 1e-100) - np.sum(y * yhat,axis = 1)
 
     def backward(self, y, yhat):
         assert(y.shape == yhat.shape)

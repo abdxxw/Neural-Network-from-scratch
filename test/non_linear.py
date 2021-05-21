@@ -6,14 +6,14 @@ import numpy as np
 
 from nn.Module import Linear,TanH,Sigmoid
 from nn.Loss import MSELoss
-from tools import basic 
+from tools.basic import * 
 
 
 
 batchsize = 1000
 
-datax, datay = basic.gen_arti(centerx=1, centery=1, sigma=0.4, nbex=batchsize, data_type=0, epsilon=0.1)
-testx, testy = basic.gen_arti(centerx=1, centery=1, sigma=0.4, nbex=batchsize, data_type=0, epsilon=0.1)
+datax, datay = gen_arti(centerx=1, centery=1, sigma=0.1, nbex=batchsize, data_type=1, epsilon=0.1)
+testx, testy = gen_arti(centerx=1, centery=1, sigma=0.1, nbex=batchsize, data_type=1, epsilon=0.1)
 
 
 datay = np.where(datay==-1,0,1).reshape((-1,1))
@@ -21,16 +21,17 @@ testy = np.where(testy==-1,0,1).reshape((-1,1))
 
 
 n = datax.shape[1]
-hidden = 5
+print(n)
+hidden = 60
 d = 1
 
-
-iteration = 10
-gradient_step = 1e-5
+type=0
+iteration = 100
+gradient_step = 1e-4
 
 loss_mse = MSELoss()
-lin_layer = Linear(n, hidden)
-lin_layer2 = Linear(hidden, d)
+lin_layer = Linear(n, hidden,type=type)
+lin_layer2 = Linear(hidden, d,type=type)
 act_sig = Sigmoid()
 act_tan = TanH()
 
@@ -74,6 +75,6 @@ def predict(x):
 
 print("accuracy : ",np.where(testy == predict(testx),1,0).mean())
 
-basic.plot_frontiere(testx, predict, step=100)
-basic.plot_data(testx, testy.reshape(-1))
+plot_frontiere(testx, predict, step=100)
+plot_data(testx, testy.reshape(-1))
 

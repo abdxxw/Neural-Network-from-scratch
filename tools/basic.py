@@ -40,6 +40,7 @@ def make_grid(data=None, xmin=-5, xmax=5, ymin=-5, ymax=5, step=20):
     """
     if data is not None:
         xmax, xmin, ymax, ymin = np.max(data[:, 0]), np.min(data[:, 0]), np.max(data[:, 1]), np.min(data[:, 1])
+        xmax, xmin, ymax, ymin = xmax+0.1, xmin-0.1, ymax+0.1, ymin-0.1
     x, y = np.meshgrid(np.arange(xmin, xmax, (xmax - xmin) * 1. / step),
                        np.arange(ymin, ymax, (ymax - ymin) * 1. / step))
     grid = np.c_[x.ravel(), y.ravel()]
@@ -84,3 +85,95 @@ def gen_arti(centerx=1, centery=1, sigma=0.1, nbex=1000, data_type=0, epsilon=0.
     data = data[idx, :]
     y = y[idx]
     return data, y
+
+
+def load_usps(fn):
+    with open(fn,"r") as f:
+        f.readline()
+        data = [[float(x) for x in l.split()] for l in f if len(l.split())>2]
+    tmp=np.array(data)
+    return tmp[:,1:],tmp[:,0].astype(int)
+
+def get_usps(l,datax,datay):
+    if type(l)!=list:
+        resx = datax[datay==l,:]
+        resy = datay[datay==l]
+        return resx,resy
+    tmp =   list(zip(*[get_usps(i,datax,datay) for i in l]))
+    tmpx,tmpy = np.vstack(tmp[0]),np.hstack(tmp[1])
+    return tmpx,tmpy
+
+def show_image(data,n=16):
+    plt.imshow(data.reshape((n,n)),interpolation="nearest",cmap="gray")
+
+
+def draw_pred(X_test,y_test,net,nb_pred=6,n=16):
+
+
+    random_ind = np.random.choice(np.arange(X_test.shape[0]), nb_pred, replace=False)
+    plt.figure(figsize=(15,5*np.ceil(nb_pred / 3)))
+    j = 1
+    for i in random_ind:
+        plt.subplot(np.ceil(nb_pred / 3),3,j)
+        plt.title("pred : {0} true : {1}".format(net.predict(np.asarray([X_test[i]])), y_test[i]))
+        show_image(X_test[i],n)
+        j+=1
+
+
+
+def draw_construction(X_test,net,nb_pred=None,n=28,n_comp=4):
+    
+    if nb_pred == None:
+        ids = [1,3,5,7,2,0,18,15,17,4]
+        nb_pred=10
+    else:
+        ids = np.random.choice(np.arange(X_test.shape[0]), nb_pred, replace=False)
+    plt.figure(figsize=(5*nb_pred,15))
+    j = 1
+    for i in ids:
+        plt.subplot(3,nb_pred,j)
+        plt.title("Real")
+        show_image(X_test[i],n)
+        
+        plt.subplot(3,nb_pred,j+nb_pred)
+        plt.title("Compressed")
+        show_image(net.forward(np.asarray([X_test[i]]))[4],n_comp)
+        
+        plt.subplot(3,nb_pred,j+2*nb_pred)
+        plt.title("Reconstructed")
+        show_image(net.predict(np.asarray([X_test[i]])),n)
+        j+=1
+
+def add_noise(data,type="gaussian",p=0.1):
+    
+    if type == "gaussian":
+        return data + p * np.random.normal(loc=0.0, scale=0.5, size=data.shape) 
+    if type == "salt_pepper":
+        out = data + np.random.choice([0, 1], size=data.shape, p=[1-p, p])
+        return np.where(out > 1,1,out)
+    else:
+        print("wrong type")
+
+def draw_noise(X_test,X_bruit,net,nb_pred=None,n=28,n_comp=4):
+    
+    if nb_pred == None:
+        ids = [1,3,5,7,2,0,18,15,17,4]
+        nb_pred=10
+    else:
+        ids = np.random.choice(np.arange(X_test.shape[0]), nb_pred, replace=False)
+    plt.figure(figsize=(5*nb_pred,15))
+    j = 1
+    for i in ids:
+        plt.subplot(3,nb_pred,j)
+        plt.title("Real")
+        show_image(X_test[i],n)
+        
+        plt.subplot(3,nb_pred,j+nb_pred)
+        plt.title("with Noise")
+        show_image(X_bruit[i],n)
+        
+        plt.subplot(3,nb_pred,j+2*nb_pred)
+        plt.title("Reconstructed")
+        show_image(net.predict(np.asarray([X_bruit[i]])),n)
+        j+=1
+
